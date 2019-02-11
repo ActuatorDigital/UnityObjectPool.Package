@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: f52f8c34d21de6c4c8b0493facadafbf
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _mockObjectPrefab: {fileID: 8108956232471279857, guid: 9539d80ba866a6744a724cbf72f0bf2c,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

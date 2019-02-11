@@ -1,0 +1,10 @@
+.vs/
+Library/
+obj/
+Temp/
+ProjectSettings/
+Packages/manifest.json
+Tests.csproj
+ObjectPool.csproj
+Assembly-CSharp.csproj
+AIR-Unity-Object-Pool.sln
