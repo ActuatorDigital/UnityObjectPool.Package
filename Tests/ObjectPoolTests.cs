@@ -1,73 +1,84 @@
-﻿using NUnit.Framework;
+﻿// Copyright (c) AIR Pty Ltd. All rights reserved.
+
+using AIR.ObjectPooling;
+using NUnit.Framework;
 using UnityEditor;
+using UnityEngine;
 
-namespace Tests {
-    public class ObjectPoolTests {
+[Ignore("Not Implemented")]
+[TestFixture]
+public class ObjectPoolTests
+{
+    [Test]
+    public void CanGetObject()
+    {
+        // Arrange
+        var prefab = GetMockObjectPrefab();
+        var objectPool = new ObjectPool<MockObject>(1, prefab);
 
-        MockObject GetMockObjectPrefab() {
-            return AssetDatabase
-                .LoadAssetAtPath<MockObject>(
-                    "Assets/Tests/MockObject.prefab" );
-        }
+        // Act
+        var objectInstance = objectPool.RequestNew();
 
-        [Test]
-        public void CanGetObject() {
+        // Assert
+        Assert.IsNotNull(objectInstance);
+    }
 
-            // Arrange
-            var prefab = GetMockObjectPrefab();
-            var objectPool = new ObjectPool<MockObject>(1, prefab);
+    [Test]
+    public void ObjectPoolInitializes()
+    {
+        // Arrange
+        const int POOL_SIZE = 100;
+        var prefab = GetMockObjectPrefab();
 
-            // Act
-            var objectInstance = objectPool.GetNew();
+        // Act
+        var objectPool = new ObjectPool<MockObject>(POOL_SIZE, prefab);
 
-            // Assert
-            Assert.IsNotNull(objectInstance);
-        }
+        // Assert
+        Assert.AreEqual(POOL_SIZE, objectPool.PoolSize);
+    }
 
-        [Test]
-        public void ObjectPoolInitializes() {
+    [Test]
+    public void ObjectPoolGrowsDynamically()
+    {
+        // Arrange
+        var prefab = GetMockObjectPrefab();
+        const int POOL_SIZE = 1, EXPANDED_SIZE = 2;
+        var objectPool = new ObjectPool<MockObject>(POOL_SIZE, prefab);
 
-            // Arrange
-            const int POOL_SIZE = 100;
-            var prefab = GetMockObjectPrefab();
+        // Act
+        for (int i = 0; i < 2; i++)
+            objectPool.RequestNew();
 
-            // Act
-            var objectPool = new ObjectPool<MockObject>(POOL_SIZE, prefab);
+        // Assert
+        Assert.AreNotEqual(POOL_SIZE, objectPool.PoolSize);
+        Assert.AreEqual(EXPANDED_SIZE, objectPool.PoolSize);
+    }
 
-            // Assert
-            Assert.AreEqual(POOL_SIZE, objectPool.PoolSize); 
-        }
+    [Test]
+    public void CanRecycleObject()
+    {
+        // Arrange
+        var prefab = GetMockObjectPrefab();
+        const int POOL_SIZE = 1;
+        var objectPool = new ObjectPool<MockObject>(POOL_SIZE, prefab);
+        var pooledObject = objectPool.RequestNew();
 
-        [Test]
-        public void ObjectPoolGrowsDynamically() {
-            // Arrange
-            var prefab = GetMockObjectPrefab();
-            const int POOL_SIZE = 1, EXPANDED_SIZE = 2;
-            var objectPool = new ObjectPool<MockObject>(POOL_SIZE, prefab);
+        // Act
+        objectPool.Recycle(pooledObject);
 
-            // Act
-            for (int i = 0; i < 2; i++) 
-                objectPool.GetNew();
+        // Assert
+        Assert.IsFalse(pooledObject.isActiveAndEnabled);
+        Assert.IsNotNull(pooledObject.transform.parent);
+    }
 
-            // Assert
-            Assert.AreNotEqual(POOL_SIZE, objectPool.PoolSize);
-            Assert.AreEqual(EXPANDED_SIZE, objectPool.PoolSize);
-        }
+    private MockObject GetMockObjectPrefab() =>
+        AssetDatabase.LoadAssetAtPath<MockObject>(
+                "Packages/com.air.objectpooling/Tests/MockObject.prefab");
 
-        [Test]
-        public void CanRecycleObject() {
-            // Arrange
-            var prefab = GetMockObjectPrefab();
-            const int POOL_SIZE = 1;
-            var objectPool = new ObjectPool<MockObject>(POOL_SIZE, prefab);
-            var pooledObject = objectPool.GetNew();
+    private class MockObject : MonoBehaviour, IPoolableObject
+    {
+        public bool HasBeenReset = false;
 
-            // Act
-            objectPool.Recycle(pooledObject);
-
-            // Assert
-            Assert.IsFalse(pooledObject.isActiveAndEnabled);
-            Assert.IsNotNull(pooledObject.transform.parent);
-        }
+        public void Reset() => HasBeenReset = true;
     }
 }

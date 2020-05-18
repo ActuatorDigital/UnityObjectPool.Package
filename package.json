@@ -8,7 +8,7 @@
     "Optimization",
     "Reduce memory usage"
   ],
-  "description": "AIR's A generic Type based GameObject pooling system for Unity.",
+  "description": "Manage reuse, creation and destruction of unity Components with Object Pooling pattern.",
   "dependencies": {
     "com.unity.test-framework": "1.0.13"
   }

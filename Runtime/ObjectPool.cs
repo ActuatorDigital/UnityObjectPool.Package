@@ -1,61 +1,21 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿// Copyright (c) AIR Pty Ltd. All rights reserved.
 
-public class ObjectPool<T> where T : MonoBehaviour, IPoolableObject {
+using System;
+using UnityEngine.UIElements;
 
-    Transform _poolParent;
-    List<T> _objects;
-    T _prefab;
+namespace AIR.ObjectPooling
+{
+    public class ObjectPool<T> : IObjectPool<T>
+        where T : IPoolableObject
+    {
+        private T[] _pooledObjects;
 
-    public int PoolSize { get { return _objects.Count;  } }
+        public ObjectPool(int poolSize, T prototype) => throw new NotImplementedException();
 
-    public ObjectPool(int poolSize, T prefab){
+        public int PoolSize { get; set; }
 
-        _poolParent = new GameObject(typeof(T).FullName + "_Pool").transform;
-        _objects = new List<T>();
-        _prefab = prefab;
+        public T RequestNew() => throw new NotImplementedException();
 
-        for (int i = 0; i < poolSize; i++) {
-            var newObj = GrowPool();
-            newObj.gameObject.SetActive(false);
-            newObj.transform.parent = _poolParent;
-        }
-
+        public void Recycle(T retiredObject) => throw new NotImplementedException();
     }
-
-    public void Recycle(T retiredObject) {
-        retiredObject.transform.parent = _poolParent;
-        retiredObject.gameObject.SetActive(false);
-    }
-
-    public T GetNew() {
-
-        foreach (MonoBehaviour obj in _objects) {
-
-            var isRetired =
-                !obj.gameObject.activeInHierarchy &&
-                obj.transform.parent == _poolParent;
-
-            if (isRetired) {
-                var nextFreeObj = obj as T;
-                nextFreeObj.transform.parent = null;
-                nextFreeObj.gameObject.SetActive(true);
-                (nextFreeObj as IPoolableObject).Reset();
-                return nextFreeObj;
-            }
-
-        }
-
-        return GrowPool();
-    }
-
-    private T GrowPool() {
-        var newPoolObject = Object.Instantiate(_prefab);
-        _objects.Add(newPoolObject);
-        return newPoolObject;
-    }
-}
-
-public interface IPoolableObject {
-    void Reset();
 }

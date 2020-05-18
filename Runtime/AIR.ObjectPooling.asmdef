@@ -1,16 +1,13 @@
 {
-    "name": "Tests",
-    "references": [
-        "ObjectPool"
-    ],
-    "optionalUnityReferences": [
-        "TestAssemblies"
-    ],
+    "name": "AIR.ObjectPooling",
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
