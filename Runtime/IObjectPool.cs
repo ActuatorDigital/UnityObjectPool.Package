@@ -3,7 +3,7 @@
 namespace AIR.ObjectPooling
 {
     public interface IObjectPool<T>
-        where T : IPoolableObject
+        where T : UnityEngine.Object
     {
         T RequestNew();
         void Recycle(T retiredObject);
