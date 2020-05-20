@@ -22,13 +22,14 @@ namespace AIR.ObjectPooling
             Action<TUnityObject> retire = null,
             Action<TUnityObject> destroy = null)
         {
+            _template = template;
+
             _pooledObjects = new List<TPooledObject<TUnityObject>>();
             for (int i = 0; i < poolSize; i++) {
                 var newObj = GrowPool();
                 activate?.Invoke(newObj.Inner);
             }
 
-            _template = template;
             _activate = activate;
             _retire = retire;
             _destroy = destroy;
@@ -46,7 +47,7 @@ namespace AIR.ObjectPooling
             _pooledObjects.Clear();
         }
 
-        public void Recycle(TUnityObject retiredObject)
+        public void Retire(TUnityObject retiredObject)
         {
             for (var i = 0; i < _pooledObjects.Count; i++) {
                 var pooledObject = _pooledObjects[i];

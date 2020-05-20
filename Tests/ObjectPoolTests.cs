@@ -100,7 +100,7 @@ public class ObjectPoolTests
 
         // Act
         foreach (var pooledObject in requestedObjects)
-            pool.Recycle(pooledObject);
+            pool.Retire(pooledObject);
 
         // Assert
         Assert.That(
@@ -140,7 +140,7 @@ public class ObjectPoolTests
         for (int i = 0; i < REQUEST_COUNT; i++)
             pooledObjects.Add(pool.ActivateNew());
         foreach (var requestedObject in pooledObjects)
-            pool.Recycle(requestedObject);
+            pool.Retire(requestedObject);
 
         // Act
         for (int i = 0; i < REQUEST_COUNT; i++)
