@@ -20,13 +20,22 @@ public class ObjectPoolTests
     }
 
     [TearDown]
-    public void TearDown() => Object.DestroyImmediate(_mockPooledObject);
+    public void TearDown()
+    {
+        if (_mockPooledObject != null)
+            Object.DestroyImmediate(_mockPooledObject.gameObject);
+    }
 
     [Test]
     public void Constructor_ForRangeOfPoolSizes_InitialPoolSizeCorrect([NUnit.Framework.Range(0, 20)] int poolSize)
     {
         // Act
-        var pool = new ObjectPool<MockPooledGameObject>(_mockPooledObject, poolSize);
+        var pool = new ObjectPool<MockPooledGameObject>(
+            _mockPooledObject,
+            poolSize,
+            null,
+            null,
+            o => Object.DestroyImmediate(o.gameObject));
 
         // Assert
         Assert.AreEqual(poolSize, pool.PoolSize);
@@ -41,8 +50,10 @@ public class ObjectPoolTests
         var pool = new ObjectPool<MockPooledGameObject>(
             _mockPooledObject,
             poolSize,
-            (po) => po.ResetCalled = true
-            );
+            (po) => po.ResetCalled = true,
+            null,
+            o => Object.DestroyImmediate(o.gameObject)
+        );
 
         // Act
         var createdObjects = new List<MockPooledGameObject>();
@@ -69,7 +80,12 @@ public class ObjectPoolTests
     public void RequestNew_RequestCountTwicePoolSize_PoolSizeDoubles([NUnit.Framework.Range(1, 20)] int poolSize)
     {
         // Arrange
-        var pool = new ObjectPool<MockPooledGameObject>(_mockPooledObject, poolSize);
+        var pool = new ObjectPool<MockPooledGameObject>(
+            _mockPooledObject,
+            poolSize,
+            null,
+            null,
+            o => Object.DestroyImmediate(o.gameObject));
 
         // Act
         var twicePoolSize = poolSize * 2;
@@ -91,7 +107,8 @@ public class ObjectPoolTests
             _mockPooledObject,
             POOL_SIZE,
             null,
-            o => o.RecycleCalled = true);
+            o => o.RecycleCalled = true,
+            o => Object.Destroy(o.gameObject));
         var requestedObjects = new List<MockPooledGameObject>();
         for (int i = 0; i < POOL_SIZE; i++) {
             var pooledObject = pool.ActivateNew();
@@ -108,6 +125,7 @@ public class ObjectPoolTests
             Is.All.True,
             "All recycled objects should have been disabled, but where not.");
         Object.DestroyImmediate(poolParent.gameObject);
+        pool.Dispose();
     }
 
     [Test]
@@ -115,7 +133,12 @@ public class ObjectPoolTests
     {
         // Arrange
         const int REQUEST_COUNT = 20;
-        var pool = new ObjectPool<MockPooledGameObject>(_mockPooledObject);
+        var pool = new ObjectPool<MockPooledGameObject>(
+            _mockPooledObject,
+            0,
+            null,
+            null,
+            o => Object.DestroyImmediate(o.gameObject));
         var requestedObjects = new List<MockPooledGameObject>();
 
         // Act
@@ -135,7 +158,12 @@ public class ObjectPoolTests
     {
         // Arrange
         const int REQUEST_COUNT = 20;
-        var pool = new ObjectPool<MockPooledGameObject>(_mockPooledObject, 0, (o) => o.ResetCalled = true);
+        var pool = new ObjectPool<MockPooledGameObject>(
+            _mockPooledObject,
+            0,
+            (o) => o.ResetCalled = true,
+            null,
+            o => Object.DestroyImmediate(o.gameObject));
         var pooledObjects = new List<MockPooledGameObject>();
         for (int i = 0; i < REQUEST_COUNT; i++)
             pooledObjects.Add(pool.ActivateNew());

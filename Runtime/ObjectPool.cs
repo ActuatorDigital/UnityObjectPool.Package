@@ -6,6 +6,7 @@ using Object = UnityEngine.Object;
 
 namespace AIR.ObjectPooling
 {
+
     public class ObjectPool<TUnityObject> : IDisposable
         where TUnityObject : Object
     {
@@ -27,7 +28,7 @@ namespace AIR.ObjectPooling
             _pooledObjects = new List<TPooledObject<TUnityObject>>();
             for (int i = 0; i < poolSize; i++) {
                 var newObj = GrowPool();
-                activate?.Invoke(newObj.Inner);
+                activate?.Invoke(newObj.InnerObject);
             }
 
             _activate = activate;
@@ -41,7 +42,7 @@ namespace AIR.ObjectPooling
         {
             Action<TUnityObject> destroyer = _destroy ?? Object.Destroy;
             foreach (TPooledObject<TUnityObject> pooledObject in _pooledObjects)
-                destroyer?.Invoke(pooledObject.Inner);
+                destroyer?.Invoke(pooledObject.InnerObject);
 
             destroyer?.Invoke(_template);
             _pooledObjects.Clear();
@@ -51,9 +52,9 @@ namespace AIR.ObjectPooling
         {
             for (var i = 0; i < _pooledObjects.Count; i++) {
                 var pooledObject = _pooledObjects[i];
-                if (pooledObject.Inner.Equals(retiredObject)) {
+                if (pooledObject.InnerObject.Equals(retiredObject)) {
                     pooledObject.Retire();
-                    _retire?.Invoke(pooledObject.Inner);
+                    _retire?.Invoke(pooledObject.InnerObject);
                     break;
                 }
             }
@@ -65,15 +66,15 @@ namespace AIR.ObjectPooling
                 var pooledObject = _pooledObjects[i];
                 if (pooledObject.IsRetired) {
                     pooledObject.Reactivate();
-                    _activate?.Invoke(pooledObject.Inner);
-                    return pooledObject.Inner;
+                    _activate?.Invoke(pooledObject.InnerObject);
+                    return pooledObject.InnerObject;
                 }
             }
 
             var commissionedObj = GrowPool();
             commissionedObj.Reactivate();
-            _activate?.Invoke(commissionedObj.Inner);
-            return commissionedObj.Inner;
+            _activate?.Invoke(commissionedObj.InnerObject);
+            return commissionedObj.InnerObject;
         }
 
         private TPooledObject<TUnityObject> GrowPool()
@@ -86,13 +87,13 @@ namespace AIR.ObjectPooling
 
         private class TPooledObject<TInnerObject>
         {
-            public readonly TInnerObject Inner;
-
-            public TPooledObject(TInnerObject inner)
+            public TPooledObject(TInnerObject innerObject)
             {
-                Inner = inner;
+                InnerObject = innerObject;
                 IsRetired = true;
             }
+
+            public TInnerObject InnerObject { get; }
 
             public bool IsRetired { get; private set; }
             public void Retire() => IsRetired = true;
