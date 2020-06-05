@@ -27,7 +27,7 @@ public class ObjectPoolTests
     }
 
     [Test]
-    public void Constructor_ForRangeOfPoolSizes_InitialPoolSizeCorrect([NUnit.Framework.Range(0, 20)] int poolSize)
+    public void Constructor_ForRangeOfPoolSizes_InitialPoolSizeCorrect([NUnit.Framework.Range(1, 20)] int poolSize)
     {
         // Act
         var pool = new ObjectPool<MockPooledGameObject>(
