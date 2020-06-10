@@ -35,65 +35,11 @@ public class ObjectPoolTests
             poolSize,
             null,
             null,
+            null,
             o => Object.DestroyImmediate(o.gameObject));
 
         // Assert
         Assert.AreEqual(poolSize, pool.PoolSize);
-        pool.Dispose();
-    }
-
-    [Test]
-    public void RequestNew_RequestsCountSameAsPoolSizeRange_PoolSizeDoesNotExpand(
-        [NUnit.Framework.Range(1, 20)] int poolSize)
-    {
-        // Arrange
-        var pool = new ObjectPool<MockPooledGameObject>(
-            _mockPooledObject,
-            poolSize,
-            (po) => po.ResetCalled = true,
-            null,
-            o => Object.DestroyImmediate(o.gameObject)
-        );
-
-        // Act
-        var createdObjects = new List<MockPooledGameObject>();
-        for (int i = 0; i < poolSize; i++) {
-            var newPooledObject = pool.ActivateNew();
-            createdObjects.Add(newPooledObject);
-        }
-
-        // Assert
-        CollectionAssert.IsNotEmpty(createdObjects);
-        CollectionAssert.AllItemsAreNotNull(createdObjects);
-        Assert.AreEqual(
-            poolSize,
-            pool.PoolSize,
-            "Only one object was requested, but multiple cached in pool.");
-        Assert.That(
-            createdObjects.Select(co => co.ResetCalled),
-            Is.All.True,
-            "One or more requested objects where not active.");
-        pool.Dispose();
-    }
-
-    [Test]
-    public void RequestNew_RequestCountTwicePoolSize_PoolSizeDoubles([NUnit.Framework.Range(1, 20)] int poolSize)
-    {
-        // Arrange
-        var pool = new ObjectPool<MockPooledGameObject>(
-            _mockPooledObject,
-            poolSize,
-            null,
-            null,
-            o => Object.DestroyImmediate(o.gameObject));
-
-        // Act
-        var twicePoolSize = poolSize * 2;
-        for (int i = 0; i < twicePoolSize; i++)
-            pool.ActivateNew();
-
-        // Assert
-        Assert.AreEqual(poolSize * 2, pool.PoolSize, "The pool's size should have doubled, but didn't");
         pool.Dispose();
     }
 
@@ -107,7 +53,8 @@ public class ObjectPoolTests
             _mockPooledObject,
             POOL_SIZE,
             null,
-            o => o.RecycleCalled = true,
+            null,
+            o => o.RetireCalled = true,
             o => Object.Destroy(o.gameObject));
         var requestedObjects = new List<MockPooledGameObject>();
         for (int i = 0; i < POOL_SIZE; i++) {
@@ -121,7 +68,7 @@ public class ObjectPoolTests
 
         // Assert
         Assert.That(
-            requestedObjects.Select(ro => ro.RecycleCalled),
+            requestedObjects.Select(ro => ro.RetireCalled),
             Is.All.True,
             "All recycled objects should have been disabled, but where not.");
         Object.DestroyImmediate(poolParent.gameObject);
@@ -138,6 +85,7 @@ public class ObjectPoolTests
             0,
             null,
             null,
+            null,
             o => Object.DestroyImmediate(o.gameObject));
         var requestedObjects = new List<MockPooledGameObject>();
 
@@ -147,7 +95,7 @@ public class ObjectPoolTests
 
         // Assert
         Assert.That(
-            requestedObjects.Select(ro => !ro.ResetCalled),
+            requestedObjects.Select(ro => !ro.ActivateCalled),
             Is.All.True,
             "Not All requested objects where reset.");
         pool.Dispose();
@@ -161,7 +109,8 @@ public class ObjectPoolTests
         var pool = new ObjectPool<MockPooledGameObject>(
             _mockPooledObject,
             0,
-            (o) => o.ResetCalled = true,
+            null,
+            (o) => o.ActivateCalled = true,
             null,
             o => Object.DestroyImmediate(o.gameObject));
         var pooledObjects = new List<MockPooledGameObject>();
@@ -176,7 +125,7 @@ public class ObjectPoolTests
 
         // Assert
         Assert.That(
-            pooledObjects.Select(ro => ro.ResetCalled),
+            pooledObjects.Select(ro => ro.ActivateCalled),
             Is.All.True,
             "Not All requested objects where reset.");
         pool.Dispose();
@@ -184,12 +133,12 @@ public class ObjectPoolTests
 
     private class MockPooledGameObject : MonoBehaviour
     {
-        public bool ResetCalled = false;
-        public bool RecycleCalled = false;
+        public bool ActivateCalled = false;
+        public bool RetireCalled = false;
 
         public void Reset()
         {
-            ResetCalled = true;
+            ActivateCalled = true;
         }
     }
 }
