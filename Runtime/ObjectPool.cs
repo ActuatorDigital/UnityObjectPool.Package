@@ -49,7 +49,32 @@ namespace AIR.ObjectPooling
             foreach (var pooledObject in _pooledObjects)
                 destroyer?.Invoke(pooledObject);
 
-            destroyer?.Invoke(_template);
+            bool canDestroyTemplateObject = true;
+
+            if (destroyer == Object.Destroy)
+            {
+                // we assume we cannot, and then prove it's a scene object. Not an asset
+                canDestroyTemplateObject = false;
+
+                if (_template is UnityEngine.GameObject aGameObject) {
+                    var isInScene = aGameObject.scene.rootCount > 0;
+                    if (isInScene) {
+                        canDestroyTemplateObject = true;
+                    }
+                }
+
+                if (_template is UnityEngine.Component aComponent) {
+                    var isInScene = aComponent.gameObject.scene.rootCount > 0;
+                    if (isInScene) {
+                        canDestroyTemplateObject = true;
+                    }
+                }
+            }
+
+            if (canDestroyTemplateObject) {
+                destroyer?.Invoke(_template);
+            }
+
             _pooledObjects.Clear();
         }
 
